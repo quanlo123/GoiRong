@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 public class Char extends Entity {
 
+    public int id;
     public String username = "";
     public byte idTypeChar;
     public byte lvPk;
@@ -113,6 +114,52 @@ sat thuong suy giam 68
         message.writeBoolean(false);
     }
 
+    public void writeDataShowList(Message msg) throws IOException {
+        msg.writeByte((byte) 1);
+        msg.writeUTF("Tên nhân vật");
+        msg.writeByte((byte) 1);
+        msg.writeByte((byte) 0);
+        msg.writeByte((byte) 1);
+        msg.writeByte((byte) 0); // typePk
+        msg.writeByte((byte) 1); // lvPk
+        msg.writeShort((short) 5000);
+        msg.writeInt(1000); // hpGoc
+        msg.writeInt(1000); // hpFull
+        msg.writeInt(500); // mpGoc
+        msg.writeInt(500); // mpFull
+        msg.writeLong(100000L); // exp
+        msg.writeShort((short) 100);
+        msg.writeShort((short) 200);
+        msg.writeByte((byte) 0);
+
+        for (int i = 0; i < 16; i++) {
+            msg.writeShort((short) 0);
+        }
+
+        byte var2 = 2;
+        msg.writeByte(var2);
+
+        for (int i = 0; i < var2; i++) {
+            msg.writeShort((short) 100);
+            msg.writeInt(1000);
+            msg.writeLong(10000L);
+            msg.writeInt(500);
+        }
+
+        byte numIn = 3;
+        msg.writeByte(numIn - 1);
+        for (int i = 1; i < numIn; i++) {
+            msg.writeUTF("Nội dung thông tin " + i);
+            msg.writeInt(100 * i);
+        }
+
+        msg.writeByte((byte) 1);
+        msg.writeByte((byte) 2);
+        msg.writeByte((byte) 3);
+
+        msg.writeBoolean(true);
+    }
+
     public void writeDataCharMe(Message message) throws IOException {
         message.writeUTF(username);
         message.writeInt(this.idEntity);
@@ -134,15 +181,10 @@ sat thuong suy giam 68
         message.writeInt(bacKhoa);
         message.writeInt(vang);
         message.writeInt(kimCuong);
-
         writeTask(message);
-
         writeTienIch2(message);
-
         message.writeShort(999);
-
         message.writeByte(0);
-
         writeItemBody(message, arrayItemBody);
         writeItemBody(message, arrayItemBody2);
         writeItemBag(message, arrayItemBag);
@@ -164,7 +206,6 @@ sat thuong suy giam 68
 
         writeDauThan(message);
 
-        /*Rac*/
         message.writeInt(0);
         message.writeInt(0);
         message.writeLong(0);
@@ -255,7 +296,7 @@ sat thuong suy giam 68
 
     private void writeFriend(Message message) throws IOException {
         message.writeShort(0);
-       
+
     }
 
     private void writeKeThu(Message message) throws IOException {
@@ -295,7 +336,6 @@ sat thuong suy giam 68
         message.writeByte(tau);
     }
 
-   
     public Skill findSkillWithIdSkillTemplate(short idSkill) {
         for (int i = 0; i < arraySkill.length; i++) {
             if (arraySkill[i].isSkillTemplate == idSkill) {

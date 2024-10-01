@@ -6,15 +6,14 @@ import com.beatdz.network.mSocket;
 import com.beatdz.real.Mob;
 import com.beatdz.real.Npc;
 
-import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.*;
 
 public class Server {
 
@@ -39,6 +38,7 @@ public class Server {
         Map.load();
         new ThreadSocket().start();
         new ThreadSocket2().start();
+        tatLog();
     }
 
     static boolean checkAuthLogin(String username, String password) {
@@ -83,7 +83,6 @@ public class Server {
             }
         }
         return null;
-
     }
 
     public static class ThreadSocket extends Thread {
@@ -98,7 +97,6 @@ public class Server {
                         if (socket != null) {
                             socket.socket.setKeepAlive(true);
                             Client.createClient(socket).start();
-                            System.out.println(socket.getIpPort() + " Client.createClient()");
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -128,5 +126,13 @@ public class Server {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public static void tatLog() {
+        Logger hikariLogger = (Logger) LoggerFactory.getLogger("com.zaxxer.hikari");
+        hikariLogger.setLevel(Level.ERROR);
+
+        Logger cc = (Logger) LoggerFactory.getLogger("org.reflections");
+        cc.setLevel(Level.ERROR);
     }
 }

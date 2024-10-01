@@ -11,23 +11,32 @@ import com.beatdz.network.mSocket;
 import com.beatdz.real.Char;
 import com.beatdz.real.Entity;
 import com.beatdz.real.WayPoint;
+import gro.database.ConfigDB;
+import gro.database.DBManager;
+import gro.database.retrieve.Internal;
+import gro.database.retrieve.PlayerRepository;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Client {
 
+    public int id;
+
     private static byte selectChar;
 
     public static Client createClient(mSocket socket) {
-        System.out.println("Log");
         Client client = new Client();
         try {
             client.session = new Session(client, socket);
             client.service = new Service(client);
-            client.myChar = new Char(Server.listClient.size());
+            client.myChar = new PlayerRepository().loadListPlayer(client);
             client.myChar.client = client;
             Server.listClient.add(client);
         } catch (Exception ex) {
@@ -102,7 +111,7 @@ public class Client {
         public Thread sendSession;
         public Thread timeOutSession;
 
-        public ArrayList<Message> listMessage = new ArrayList();
+        public ArrayList<Message> listMessage = new ArrayList<>();
         public Object waitSendSession = new Object();
         public Object waitTimeOut = new Object();
         private boolean isConnect;
@@ -249,7 +258,6 @@ public class Client {
         public void readMessage() throws IOException {
             byte cmd1 = 0;
             byte cmd = reader.dis.readByte();
-            //System.out.println("readMessage() "+cmd);
 
             int size = 0;
             int byte1;
@@ -476,10 +484,10 @@ public class Client {
                         readDataType(msg);
                         break;
                     case -123:
-                        readData123(msg);
+                        readData123(msg);// no messager
                         break;
                     case -124:
-                        readData124(msg);
+                        readData124(msg);// on messager
                         break;
                 }
             } catch (Exception ex) {
@@ -511,20 +519,18 @@ public class Client {
                         this.createTimeOut(30000);
                         this.client.service.showTabLogin();
                         break;
-                    case -127:
+                    case -127:// login hander
                         String username = msg.readUTF();
                         String password = msg.readUTF();
                         int ver1 = msg.readInt();
                         int ver2 = msg.readInt();
-                        if (username.length() <= 0 || password.length() <= 0 || !Server.checkAuthLogin(username, password)) {
-                            this.client.service.sendMessage("Tài khoản hoặc mật khẩu không chính xác!", Service.ColorMessage.WHITE);
+                        if (Internal.login(client, username, password)) {
+                            this.stopTimeOut();
+                            this.client.service.sendData2();
+                            this.client.service.showTabSelectChar();
+                        } else {
                             this.createTimeOut(30000);
-                            return;
                         }
-                        this.stopTimeOut();
-                        this.client.service.sendData2();
-                        this.client.service.showTabSelectChar();
-
                         break;
                 }
             } catch (Exception ex) {
@@ -533,39 +539,89 @@ public class Client {
             }
         }
 
-        private void readData124(Message msg) throws IOException {
+        private void readData124(Message msg) throws IOException {// create player
             byte cmd = msg.readByte();
             System.out.println("readData124() => " + cmd);
             try {
                 switch (cmd) {
-                    case -128:
-                        byte selectChar = msg.readByte();
-                        String nameChar = msg.readUTF();
-                        if (selectChar >= 0 && selectChar <= 3) {
-                            this.client.myChar.name = String.valueOf(this.client.myChar.idEntity);
-                            if (nameChar.length() > 0) {
-                                this.client.myChar.name = nameChar;
-                            } else if (this.client.myChar.idEntity == 0 || this.client.myChar.name.equals("DungDz")) {
-                                this.client.myChar.name = "DungDz";
-                            } else {
-                                this.client.myChar.name = "1";
-                            }
-                            this.client.myChar.idTypeChar = selectChar;
-                            this.client.myChar.indexTypeChar = (byte) (selectChar + 1);
-                            this.client.myChar.loadSkill();
-                            this.client.online();
-                            this.client.service.sendDataChar();
-                            this.client.service.showGameScreen();
-                            this.client.service.sendOnlineInMap();
-                            this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
-                        } else {
-                            this.client.service.sendMessage("Nhân vật bạn chọn không tồn tại!", Service.ColorMessage.RED);
-                        }
+                    case -128:// tao nhan vat
+                        this.createChar(msg);
+//                        byte selectChar = msg.readByte();
+//                        String nameChar = msg.readUTF();
+//                        if (selectChar >= 0 && selectChar <= 3) {
+////                            this.client.myChar.name = String.valueOf(this.client.myChar.idEntity);
+////                            if (nameChar.length() > 0) {
+////                                this.client.myChar.name = nameChar;
+////                            } else if (this.client.myChar.idEntity == 0 || this.client.myChar.name.equals("DungDz")) {
+////                                this.client.myChar.name = "DungDz";
+////                            } else {
+////                                this.client.myChar.name = "1";
+////                            }
+////                            this.client.myChar.idTypeChar = selectChar;
+////                            this.client.myChar.indexTypeChar = (byte) (selectChar + 1);
+////                            this.client.myChar.loadSkill();
+////                            this.client.online();
+////                            this.client.service.sendDataChar();
+////                            this.client.service.showGameScreen();
+////                            this.client.service.sendOnlineInMap();
+////                            this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
+//                            PlayerRepository.gI().createNewPlayer(this.client, this.client.id, nameChar);
+//                            this.client.myChar.idTypeChar = selectChar;
+//                            this.client.myChar.indexTypeChar = (byte) (selectChar + 1);
+//                            this.client.myChar.name = nameChar;
+//                            this.client.myChar.loadSkill();
+//                            this.client.online();
+//                            this.client.service.sendDataChar();
+//                            this.client.service.showGameScreen();
+//                            this.client.service.sendOnlineInMap();
+//                            this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
+//                        } else {
+//                            this.client.service.sendMessage("Nhân vật bạn chọn không tồn tại!", Service.ColorMessage.RED);
+//                        }
                         break;
                 }
             } catch (Exception ex) {
                 System.out.println("readData124 Err :" + cmd);
                 ex.printStackTrace();
+            }
+        }
+
+        private void createChar(Message msg) {
+            try (Connection con = DBManager.getConnectionForTask(ConfigDB.DATABASE_DYNAMIC, "CreateCharHandler")) {
+                byte selectChar = msg.readByte();
+                String nameChar = msg.readUTF();
+                if (nameChar.length() > 10 || nameChar.length() < 5) {
+                    this.client.service.sendMessage("Tên nhân vật tối thiểu 5 kí tự và tối đa 10 ký tự", Service.ColorMessage.RED);
+                    return;
+                }
+
+                // check trung ten
+                try (PreparedStatement ps = con.prepareStatement("select * from player where LOWER(name) = LOWER(?)")) {
+                    ps.setString(1, nameChar);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            this.client.service.sendMessage("Tên nhân vật đã tồn tại", Service.ColorMessage.RED);
+                            return;
+                        }
+                    }
+                }
+
+                if (selectChar >= 0 && selectChar <= 3) {
+                    PlayerRepository.gI().createNewPlayer(this.client, this.client.id, nameChar);
+                    this.client.myChar.idTypeChar = selectChar;
+                    this.client.myChar.indexTypeChar = (byte) (selectChar + 1);
+                    this.client.myChar.name = nameChar;
+                    this.client.myChar.loadSkill();
+                    this.client.online();
+                    this.client.service.sendDataChar();
+                    this.client.service.showGameScreen();
+                    this.client.service.sendOnlineInMap();
+                    this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
+                } else {
+                    this.client.service.sendMessage("Nhân vật bạn chọn không tồn tại!", Service.ColorMessage.RED);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -586,8 +642,7 @@ public class Client {
             String keyAppClient = message.reader().readUTF();
             String userData = new String(message.reader().read(), "UTF-8");
             if (keyAppClient.equals(Server.keyApp)) {
-                //System.out.println(keyAppClient);
-                //System.out.println(userData);
+
             } else {
                 this.close();
                 return;

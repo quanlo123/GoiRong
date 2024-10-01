@@ -2,9 +2,7 @@ package com.beatdz.network;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 
 public class Message {
 
@@ -119,6 +117,4 @@ public class Message {
         } catch (Exception e) {
         }
     }
-
-
 }

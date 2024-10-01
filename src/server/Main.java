@@ -17,7 +17,7 @@ public class Main {
 
     public static String ip = "http://14.225.219.58/gro/";
 
-    public static void main(String[] args) {
+    public static void main(String args) {
         try {
             URL url = new URL(ip);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();

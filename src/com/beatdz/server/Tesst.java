@@ -6,19 +6,20 @@
 package com.beatdz.server;
 
 import com.beatdz.lib.Utlis;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
  * @author admin
  */
 public class Tesst {
 
-    public static void main(String[] a) {
+    public static void main(String aaaa) {
         try {
             byte[] array = Utlis.read("DataServer\\Map\\86.bin");
 
@@ -302,7 +303,7 @@ public class Tesst {
         int count = 0;
         for (int i = 0; i <= 300; i += 3) {
             //count += i;
-            System.out.println("lv"+i/2+": "+i*10);
+            System.out.println("lv" + i / 2 + ": " + i * 10);
         }
         System.out.println(count);
 

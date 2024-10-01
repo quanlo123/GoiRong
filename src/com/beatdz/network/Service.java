@@ -16,6 +16,9 @@ import com.beatdz.server.Client;
 import com.beatdz.server.Client.Session;
 import com.beatdz.server.DataCenter;
 import com.beatdz.server.Server;
+import gro.database.retrieve.PlayerRepository;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,7 +65,16 @@ public class Service {
         try {
             Message message = new Message(-122);
             message.writeByte(-128);
-            message.writeByte(0);
+            System.out.println("size: " + this.client.myChar.idEntity);
+            if (this.client.myChar.idEntity <= 0) {
+                message.writeByte(0);
+            } else {
+                for (int i = 0; i < 1; i++) {
+                    message.writeByte(1);
+                    message.writeInt(600000);
+                    this.client.myChar.writeDataShowList(message);
+                }
+            }
             this.session.sendMessage(message);
         } catch (Exception ex) {
         }
@@ -73,11 +85,13 @@ public class Service {
             Message message = new Message(-122);
             message.isNen = true;
             this.session.sendMessage(message);
+            String text = "";
         } catch (Exception ex) {
         }
     }
 
     public void showTabLogin() {
+        System.out.println("showTabLogin");
         try {
             Message message = new Message(-123);
             message.writeByte(-126);
@@ -88,6 +102,7 @@ public class Service {
     }
 
     public void sendDataChar() {
+        System.out.println("sendDataChar");
         try {
             Message message = new Message(-122);
             message.writeByte(-127);
@@ -407,7 +422,6 @@ public class Service {
 
         }
     }
-
 
     public void sendChatNpc(short idNpc, String string) {
         try {
@@ -729,10 +743,8 @@ public class Service {
                     this.client.myChar.itemBagToBody(item);
                 } else if (item.isTauBay()) {
                     this.showTabTauBay(item);
-                    return;
                 } else if (ItemCombo.check(item.id)) {
                     this.showTabTauBay(item);
-                    return;
                 }
             }
         }
@@ -1183,86 +1195,86 @@ public class Service {
         }
 
         public static DataItemSelect[] DATA_CAPSULE_PHI_THUYEN = new DataItemSelect[]{
-                new DataItemSelect(569),
-                new DataItemSelect(719),
-                new DataItemSelect(718),
-                new DataItemSelect(717),
-                new DataItemSelect(716),
-                new DataItemSelect(720), // new DataItemSelect("Combo", new Item(0), new Item(1), new Item(2), new Item(3), new Item(4), new Item(5), new Item(6), new Item(7), new Item(8), new Item(9)),
+            new DataItemSelect(569),
+            new DataItemSelect(719),
+            new DataItemSelect(718),
+            new DataItemSelect(717),
+            new DataItemSelect(716),
+            new DataItemSelect(720), // new DataItemSelect("Combo", new Item(0), new Item(1), new Item(2), new Item(3), new Item(4), new Item(5), new Item(6), new Item(7), new Item(8), new Item(9)),
         };
 
         public static DataItemSelect[] DATA_CAPSULE_TRANG_BI_GOKU = new DataItemSelect[]{
-                new DataItemSelect(null,
-                        new Item(
-                                64,
-                                true
-                        ),
-                        new Item(
-                                74,
-                                true
-                        ),
-                        new Item(
-                                84,
-                                true
-                        ),
-                        new Item(
-                                94,
-                                true
-                        )),};
+            new DataItemSelect(null,
+            new Item(
+            64,
+            true
+            ),
+            new Item(
+            74,
+            true
+            ),
+            new Item(
+            84,
+            true
+            ),
+            new Item(
+            94,
+            true
+            )),};
         public static DataItemSelect[] DATA_CAPSULE_TRANG_BI_CADIC = new DataItemSelect[]{
-                new DataItemSelect(null,
-                        new Item(
-                                69,
-                                true
-                        ),
-                        new Item(
-                                79,
-                                true
-                        ),
-                        new Item(
-                                89,
-                                true
-                        ),
-                        new Item(
-                                99,
-                                true
-                        )),};
+            new DataItemSelect(null,
+            new Item(
+            69,
+            true
+            ),
+            new Item(
+            79,
+            true
+            ),
+            new Item(
+            89,
+            true
+            ),
+            new Item(
+            99,
+            true
+            )),};
         public static DataItemSelect[] DATA_CAPSULE_TRANG_BI_GOHAN = new DataItemSelect[]{
-                new DataItemSelect(null,
-                        new Item(
-                                595,
-                                true
-                        ),
-                        new Item(
-                                610,
-                                true
-                        ),
-                        new Item(
-                                625,
-                                true
-                        ),
-                        new Item(
-                                640,
-                                true
-                        )),};
+            new DataItemSelect(null,
+            new Item(
+            595,
+            true
+            ),
+            new Item(
+            610,
+            true
+            ),
+            new Item(
+            625,
+            true
+            ),
+            new Item(
+            640,
+            true
+            )),};
         public static DataItemSelect[] DATA_CAPSULE_TRANG_BI_POCOLO = new DataItemSelect[]{
-                new DataItemSelect(null,
-                        new Item(
-                                600,
-                                true
-                        ),
-                        new Item(
-                                615,
-                                true
-                        ),
-                        new Item(
-                                630,
-                                true
-                        ),
-                        new Item(
-                                645,
-                                true
-                        )),};
+            new DataItemSelect(null,
+            new Item(
+            600,
+            true
+            ),
+            new Item(
+            615,
+            true
+            ),
+            new Item(
+            630,
+            true
+            ),
+            new Item(
+            645,
+            true
+            )),};
 
         public String name;
         public ArrayList<Item> listItem = new ArrayList<Item>();
@@ -1293,19 +1305,19 @@ public class Service {
     public static class DataMapTauBay {
 
         public static DataMapTauBay[] DATA_TAU_MAC_DINH = new DataMapTauBay[]{
-                new DataMapTauBay(86),
-                new DataMapTauBay(67),
-                new DataMapTauBay(56),
-                new DataMapTauBay(83)
+            new DataMapTauBay(86),
+            new DataMapTauBay(67),
+            new DataMapTauBay(56),
+            new DataMapTauBay(83)
 
         };
         public static DataMapTauBay[] DATA_TAU_VIP = new DataMapTauBay[]{
-                new DataMapTauBay(-1, "Đi đến hành tinh Fide", 0),
-                new DataMapTauBay(-1, "Đi đến hành tinh Tương Lai", 1),
-                new DataMapTauBay(-1, "Đi đến hành tinh Vampa", 2),
-                new DataMapTauBay(-1, "Đi đến hành tinh Namếc", 3),
-                new DataMapTauBay(-1, "Đi đến hành tinh Yardrat", 4),
-                new DataMapTauBay(-1, "Đi đến Sa mạc", 5)};
+            new DataMapTauBay(-1, "Đi đến hành tinh Fide", 0),
+            new DataMapTauBay(-1, "Đi đến hành tinh Tương Lai", 1),
+            new DataMapTauBay(-1, "Đi đến hành tinh Vampa", 2),
+            new DataMapTauBay(-1, "Đi đến hành tinh Namếc", 3),
+            new DataMapTauBay(-1, "Đi đến hành tinh Yardrat", 4),
+            new DataMapTauBay(-1, "Đi đến Sa mạc", 5)};
         public String name;
         public int id;
         public int typePlant = -1;
