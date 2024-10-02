@@ -36,8 +36,7 @@ public class Client {
         try {
             client.session = new Session(client, socket);
             client.service = new Service(client);
-            client.myChar = new PlayerRepository().loadListPlayer(client);
-            client.myChar.client = client;
+//            client.myChar = new PlayerRepository().loadListPlayer(client);
             Server.listClient.add(client);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -128,7 +127,6 @@ public class Client {
                     }
                 }
             }
-
         }
 
         private void createTimeOut(int i) {
@@ -196,6 +194,7 @@ public class Client {
         }
 
         public void close() {
+            System.out.println("close");
             if (!isConnect) {
                 return;
             }
@@ -255,124 +254,9 @@ public class Client {
             System.gc();
         }
 
-        public void readMessage() throws IOException {
-            byte cmd1 = 0;
-            byte cmd = reader.dis.readByte();
-
-            int size = 0;
-            int byte1;
-            int byte2;
-            int byte3;
-            switch (cmd) {
-                case -82:
-                    int[] arrayXY = new int[]{this.client.myChar.x + reader.dis.readByte(), this.client.myChar.y};
-                    this.client.myChar.updateXY(arrayXY);
-                    Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, true);
-                    return;
-                case -83:
-                    arrayXY = new int[]{this.client.myChar.x, this.client.myChar.y + reader.dis.readByte()};
-                    this.client.myChar.updateXY(arrayXY);
-                    Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, true);
-                    return;
-                case -84:
-                    byte1 = (reader.dis.readByte());
-                    byte2 = (reader.dis.readByte() & 255);
-                    byte3 = (reader.dis.readByte() & 255);
-                    this.client.myChar.updateXY(Utlis.getXYReal(byte1, byte2, byte3, DataCenter.gI().I[this.client.myChar.mapID].x));
-                    Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, true);
-                    return;
-                case 123:
-                    byte1 = (reader.dis.readByte());
-                    byte2 = (reader.dis.readByte() & 255);
-                    byte3 = (reader.dis.readByte() & 255);
-                    this.client.myChar.updateXY(Utlis.getXYReal(byte1, byte2, byte3, DataCenter.gI().I[this.client.myChar.mapID].x));
-                    Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, false);
-                    return;
-                case 124:
-                    arrayXY = new int[]{this.client.myChar.x, this.client.myChar.y + reader.dis.readByte()};
-                    this.client.myChar.updateXY(arrayXY);
-                    Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, false);
-                    return;
-                case 125:
-                    arrayXY = new int[]{this.client.myChar.x + reader.dis.readByte(), this.client.myChar.y};
-                    this.client.myChar.updateXY(arrayXY);
-                    Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, false);
-                    return;
-                case 61:
-                    int indexSkill = reader.dis.readByte();
-                    this.client.service.useSkill(indexSkill);
-                    return;
-                case -65:
-                case -60:
-                    indexSkill = reader.dis.readByte();
-                    int idMob;
-                    if (cmd == -65) {
-                        idMob = reader.dis.readByte();
-                    } else {
-                        idMob = reader.dis.readShort();
-                    }
-                    this.client.service.attackMob(indexSkill, idMob);
-                    return;
-                case -64:
-                    reader.dis.readByte();
-                    reader.dis.readByte();
-                    return;
-                case -87:
-                    reader.dis.readByte();
-                    reader.dis.readShort();
-                    return;
-                case -81:
-                    reader.dis.readByte();
-                    reader.dis.readInt();
-                    return;
-                case 20:
-                    reader.dis.readByte();
-                    reader.dis.readInt();
-                    return;
-                case -80:
-                    cmd1 = cmd;
-                    cmd = reader.dis.readByte();
-                    size = (reader.dis.readByte() & 255 >> 8) + (reader.dis.readByte() & 255);
-                    break;
-                default:
-                    size = reader.dis.readUnsignedShort();
-                    break;
-            }
-            byte[] array = new byte[size];
-            if (size > 0) {
-                int var24 = 0;
-                while (size > 0) {
-                    int var8;
-                    if (size - 2048 <= 0) {
-                        var8 = size;
-                    } else {
-                        var8 = 2048;
-                    }
-
-                    int var26;
-                    if ((var26 = this.reader.dis.available()) == 0) {
-                        Utlis.sleep(1L);
-                    } else {
-                        if (var8 > var26) {
-                            var8 = var26;
-                        }
-
-                        this.reader.dis.read(array, var24, var8);
-                        var24 += var8;
-                        size -= var8;
-                    }
-                }
-                if (cmd1 == -80) {
-                    array = Utlis.inflateByteArray(array);
-                }
-            }
-            readMessage(new Message(cmd, array));
-        }
-
         private void readMessage(Message msg) {
             byte cmd = msg.cmd;
             if (cmd != -123 && cmd != -122 && cmd != 122 && cmd != -124) {
-                System.out.println("readMessage() => " + cmd);
             }
             try {
                 switch (cmd) {
@@ -489,6 +373,9 @@ public class Client {
                     case -124:
                         readData124(msg);// on messager
                         break;
+                    case -122:
+                        readMsg122(msg);
+                        break;
                 }
             } catch (Exception ex) {
                 System.out.println("readMessage Err :" + cmd);
@@ -498,9 +385,152 @@ public class Client {
             }
         }
 
+        public void readMsg122(Message msg) {
+            try {
+                byte cmd = msg.readByte();
+                switch (cmd) {
+                    case -127:
+
+                        System.out.println("Login");
+                        Char player = PlayerRepository.gI().loadListPlayer(this.client);
+                        this.client.myChar = player;
+                        this.client.myChar.client = this.client;
+                        this.client.myChar.loadSkill();
+                        this.client.online();
+                        this.client.service.sendDataChar();
+                        this.client.service.showGameScreen();
+                        this.client.service.sendOnlineInMap();
+                        this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
+                        break;
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        public void readMessage() {
+            try {
+                byte cmd1 = 0;
+                byte cmd = reader.dis.readByte();
+                int size = 0;
+                int byte1;
+                int byte2;
+                int byte3;
+                switch (cmd) {
+                    case -82:
+                        int[] arrayXY = new int[]{this.client.myChar.x + reader.dis.readByte(), this.client.myChar.y};
+                        this.client.myChar.updateXY(arrayXY);
+                        Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, true);
+                        return;
+                    case -83:
+                        arrayXY = new int[]{this.client.myChar.x, this.client.myChar.y + reader.dis.readByte()};
+                        this.client.myChar.updateXY(arrayXY);
+                        Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, true);
+                        return;
+                    case -84:
+                        byte1 = (reader.dis.readByte());
+                        byte2 = (reader.dis.readByte() & 255);
+                        byte3 = (reader.dis.readByte() & 255);
+                        this.client.myChar.updateXY(Utlis.getXYReal(byte1, byte2, byte3, DataCenter.gI().I[this.client.myChar.mapID].x));
+                        Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, true);
+                        return;
+                    case 123:
+                        byte1 = (reader.dis.readByte());
+                        byte2 = (reader.dis.readByte() & 255);
+                        byte3 = (reader.dis.readByte() & 255);
+                        this.client.myChar.updateXY(Utlis.getXYReal(byte1, byte2, byte3, DataCenter.gI().I[this.client.myChar.mapID].x));
+                        Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, false);
+                        return;
+                    case 124:
+                        arrayXY = new int[]{this.client.myChar.x, this.client.myChar.y + reader.dis.readByte()};
+                        this.client.myChar.updateXY(arrayXY);
+                        Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, false);
+                        return;
+                    case 125:
+                        arrayXY = new int[]{this.client.myChar.x + reader.dis.readByte(), this.client.myChar.y};
+                        this.client.myChar.updateXY(arrayXY);
+                        Map.listMap.get(this.client.myChar.mapID).listZone.get(this.client.myChar.zoneID).sendMove(this.client.myChar, false);
+                        return;
+                    case 61:
+                        int indexSkill = reader.dis.readByte();
+                        this.client.service.useSkill(indexSkill);
+                        return;
+                    case -65:
+                    case -60:
+                        indexSkill = reader.dis.readByte();
+                        int idMob;
+                        if (cmd == -65) {
+                            idMob = reader.dis.readByte();
+                        } else {
+                            idMob = reader.dis.readShort();
+                        }
+                        this.client.service.attackMob(indexSkill, idMob);
+                        return;
+                    case -64:
+                        reader.dis.readByte();
+                        reader.dis.readByte();
+                        return;
+                    case -87:
+                        reader.dis.readByte();
+                        reader.dis.readShort();
+                        return;
+                    case -81:
+                        reader.dis.readByte();
+                        reader.dis.readInt();
+                        return;
+                    case 20:
+                        reader.dis.readByte();
+                        reader.dis.readInt();
+                        return;
+                    case -80:
+                        cmd1 = cmd;
+                        cmd = reader.dis.readByte();
+                        size = (reader.dis.readByte() & 255 >> 8) + (reader.dis.readByte() & 255);
+                        break;
+                    default:
+                        System.out.println("msg chuaw lafm : " + cmd);
+                        size = reader.dis.readUnsignedShort();
+                        break;
+                }
+                byte[] array = new byte[size];
+                if (size > 0) {
+                    int var24 = 0;
+                    while (size > 0) {
+                        int var8;
+                        if (size - 2048 <= 0) {
+                            var8 = size;
+                        } else {
+                            var8 = 2048;
+                        }
+
+                        int var26;
+                        if ((var26 = this.reader.dis.available()) == 0) {
+                            Utlis.sleep(1L);
+                        } else {
+                            if (var8 > var26) {
+                                var8 = var26;
+                            }
+
+                            this.reader.dis.read(array, var24, var8);
+                            var24 += var8;
+                            size -= var8;
+                        }
+                    }
+                    if (cmd1 == -80) {
+                        array = Utlis.inflateByteArray(array);
+                    }
+                }
+                readMessage(new Message(cmd, array));
+            } catch (Exception e) {
+                this.close();
+            }
+        }
+
         private void readData123(Message msg) throws IOException {
             byte cmd = msg.readByte();
-            System.out.println("readData123() => " + cmd);
+//            System.out.println("readData123() => " + cmd);
             try {
                 switch (cmd) {
                     case -48:
@@ -524,6 +554,7 @@ public class Client {
                         String password = msg.readUTF();
                         int ver1 = msg.readInt();
                         int ver2 = msg.readInt();
+
                         if (Internal.login(client, username, password)) {
                             this.stopTimeOut();
                             this.client.service.sendData2();
@@ -541,44 +572,13 @@ public class Client {
 
         private void readData124(Message msg) throws IOException {// create player
             byte cmd = msg.readByte();
-            System.out.println("readData124() => " + cmd);
+            System.out.println("readData 124: " + cmd);
             try {
                 switch (cmd) {
                     case -128:// tao nhan vat
                         this.createChar(msg);
-//                        byte selectChar = msg.readByte();
-//                        String nameChar = msg.readUTF();
-//                        if (selectChar >= 0 && selectChar <= 3) {
-////                            this.client.myChar.name = String.valueOf(this.client.myChar.idEntity);
-////                            if (nameChar.length() > 0) {
-////                                this.client.myChar.name = nameChar;
-////                            } else if (this.client.myChar.idEntity == 0 || this.client.myChar.name.equals("DungDz")) {
-////                                this.client.myChar.name = "DungDz";
-////                            } else {
-////                                this.client.myChar.name = "1";
-////                            }
-////                            this.client.myChar.idTypeChar = selectChar;
-////                            this.client.myChar.indexTypeChar = (byte) (selectChar + 1);
-////                            this.client.myChar.loadSkill();
-////                            this.client.online();
-////                            this.client.service.sendDataChar();
-////                            this.client.service.showGameScreen();
-////                            this.client.service.sendOnlineInMap();
-////                            this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
-//                            PlayerRepository.gI().createNewPlayer(this.client, this.client.id, nameChar);
-//                            this.client.myChar.idTypeChar = selectChar;
-//                            this.client.myChar.indexTypeChar = (byte) (selectChar + 1);
-//                            this.client.myChar.name = nameChar;
-//                            this.client.myChar.loadSkill();
-//                            this.client.online();
-//                            this.client.service.sendDataChar();
-//                            this.client.service.showGameScreen();
-//                            this.client.service.sendOnlineInMap();
-//                            this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
-//                        } else {
-//                            this.client.service.sendMessage("Nhân vật bạn chọn không tồn tại!", Service.ColorMessage.RED);
-//                        }
                         break;
+
                 }
             } catch (Exception ex) {
                 System.out.println("readData124 Err :" + cmd);
@@ -589,7 +589,9 @@ public class Client {
         private void createChar(Message msg) {
             try (Connection con = DBManager.getConnectionForTask(ConfigDB.DATABASE_DYNAMIC, "CreateCharHandler")) {
                 byte selectChar = msg.readByte();
+                System.out.println("selectChar: " + selectChar);
                 String nameChar = msg.readUTF();
+                byte gender = (byte) (selectChar + 1);
                 if (nameChar.length() > 10 || nameChar.length() < 5) {
                     this.client.service.sendMessage("Tên nhân vật tối thiểu 5 kí tự và tối đa 10 ký tự", Service.ColorMessage.RED);
                     return;
@@ -605,11 +607,10 @@ public class Client {
                         }
                     }
                 }
-
-                if (selectChar >= 0 && selectChar <= 3) {
-                    PlayerRepository.gI().createNewPlayer(this.client, this.client.id, nameChar);
+                if (this.client.myChar.idEntity < 0) {
+                    PlayerRepository.gI().createNewPlayer(this.client, this.client.id, nameChar, gender);
                     this.client.myChar.idTypeChar = selectChar;
-                    this.client.myChar.indexTypeChar = (byte) (selectChar + 1);
+                    this.client.myChar.indexTypeChar = (byte) gender;
                     this.client.myChar.name = nameChar;
                     this.client.myChar.loadSkill();
                     this.client.online();
@@ -618,34 +619,38 @@ public class Client {
                     this.client.service.sendOnlineInMap();
                     this.client.service.setColorDanhHieu("Beo dep trai", com.badlogic.gdx.graphics.Color.YELLOW.toIntBits(), com.badlogic.gdx.graphics.Color.YELLOW.toIntBits());
                 } else {
-                    this.client.service.sendMessage("Nhân vật bạn chọn không tồn tại!", Service.ColorMessage.RED);
+                    this.client.service.sendMessage("Không thể tạo nhân vật", Service.ColorMessage.RED);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+
             }
         }
 
         private void readData122InGame(Message msg) throws IOException {
             byte cmd = msg.readByte();
-            System.out.println("readData122InGame() => " + cmd);
             try {
                 switch (cmd) {
 
                 }
             } catch (Exception ex) {
-                System.out.println("readData122InGame Err :" + cmd);
                 ex.printStackTrace();
             }
         }
 
-        private void readDataOS(Message message) throws IOException {
-            String keyAppClient = message.reader().readUTF();
-            String userData = new String(message.reader().read(), "UTF-8");
-            if (keyAppClient.equals(Server.keyApp)) {
+        private void readDataOS(Message message) {
+            try {
+                String keyAppClient = message.reader().readUTF();
+                String userData = new String(message.reader().read(), "UTF-8");
+                if (keyAppClient.equals(Server.keyApp)) {
 
-            } else {
-                this.close();
-                return;
+                } else {
+                    this.close();
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -705,7 +710,10 @@ public class Client {
             public void run() {
                 while (this.session.isConnect()) {
                     try {
-                        this.session.readMessage();
+
+                        if (this.session.isConnect) {
+                            this.session.readMessage();
+                        }
                     } catch (Exception ex) {
                         //ex.printStackTrace();
                         this.session.close();
@@ -791,6 +799,5 @@ public class Client {
                 }
             }
         }
-
     }
 }

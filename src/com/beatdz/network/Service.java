@@ -61,22 +61,33 @@ public class Service {
         }
     }
 
+    private void sendEmptyCharacterMessage() throws IOException {
+        Message message = new Message(-122);
+        message.writeByte(-128);
+        message.writeByte(0);
+        this.session.sendMessage(message);
+    }
+
     public void showTabSelectChar() {
         try {
+            Char player = PlayerRepository.gI().loadListPlayer(this.client);
+            this.client.myChar = player;
+            if (this.client.myChar == null || this.client.myChar.idEntity <= 0) {
+                sendEmptyCharacterMessage();
+                return;
+            }
+
             Message message = new Message(-122);
             message.writeByte(-128);
-            System.out.println("size: " + this.client.myChar.idEntity);
-            if (this.client.myChar.idEntity <= 0) {
-                message.writeByte(0);
-            } else {
-                for (int i = 0; i < 1; i++) {
-                    message.writeByte(1);
-                    message.writeInt(600000);
-                    this.client.myChar.writeDataShowList(message);
-                }
+            for (int i = 0; i < 1; i++) {
+                message.writeByte(1);
+                message.writeInt(this.client.myChar.idEntity);
+                this.client.myChar.writeDataChar(message, -1);
             }
+
             this.session.sendMessage(message);
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

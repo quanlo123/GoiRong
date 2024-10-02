@@ -35,6 +35,10 @@ public class Char extends Entity {
     public String name = "";
     public Client client;
 
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
     public int mapID = 75;
     public int zoneID = 0;
     public int status = 0;
@@ -89,7 +93,7 @@ sat thuong suy giam 68
         message.writeUTF(name);
         message.writeByte(idTypeChar);
         message.writeByte(gioiTinh);
-        message.writeByte(indexTypeChar);
+        message.writeByte(indexTypeChar);// gender
         message.writeByte(typePk);
         message.writeByte(lvPk);
         message.writeShort(speedMove);
@@ -105,59 +109,10 @@ sat thuong suy giam 68
         message.writeByte(0);
         message.writeByte(0);
         writeDanhHieu(message);
-
         message.writeByte(0);//rank
-
         writeTypeSelectOutChar(message);
-
         writeTypeMoveMap(message, tau);
         message.writeBoolean(false);
-    }
-
-    public void writeDataShowList(Message msg) throws IOException {
-        msg.writeByte((byte) 1);
-        msg.writeUTF("Tên nhân vật");
-        msg.writeByte((byte) 1);
-        msg.writeByte((byte) 0);
-        msg.writeByte((byte) 1);
-        msg.writeByte((byte) 0); // typePk
-        msg.writeByte((byte) 1); // lvPk
-        msg.writeShort((short) 5000);
-        msg.writeInt(1000); // hpGoc
-        msg.writeInt(1000); // hpFull
-        msg.writeInt(500); // mpGoc
-        msg.writeInt(500); // mpFull
-        msg.writeLong(100000L); // exp
-        msg.writeShort((short) 100);
-        msg.writeShort((short) 200);
-        msg.writeByte((byte) 0);
-
-        for (int i = 0; i < 16; i++) {
-            msg.writeShort((short) 0);
-        }
-
-        byte var2 = 2;
-        msg.writeByte(var2);
-
-        for (int i = 0; i < var2; i++) {
-            msg.writeShort((short) 100);
-            msg.writeInt(1000);
-            msg.writeLong(10000L);
-            msg.writeInt(500);
-        }
-
-        byte numIn = 3;
-        msg.writeByte(numIn - 1);
-        for (int i = 1; i < numIn; i++) {
-            msg.writeUTF("Nội dung thông tin " + i);
-            msg.writeInt(100 * i);
-        }
-
-        msg.writeByte((byte) 1);
-        msg.writeByte((byte) 2);
-        msg.writeByte((byte) 3);
-
-        msg.writeBoolean(true);
     }
 
     public void writeDataCharMe(Message message) throws IOException {
@@ -470,13 +425,19 @@ sat thuong suy giam 68
     }
 
     public int getDameAttackMob(Skill skill, boolean[] array) {
-        int dameMax = this.client.myChar.getDameAttack(skill, true, true);
-        int dame = Utlis.nextInt(dameMax * 90 / 100, dameMax);
-        array[0] = Utlis.c.nextFloat() <= ((float) this.client.myChar.chiMang / 10000);
-        if (array[0]) {
-            dame = dame + ((dame * 80) / 100);
+        try {
+            int dameMax = this.client.myChar.getDameAttack(skill, true, true);
+            int dame = Utlis.nextInt(dameMax * 90 / 100, dameMax);
+            array[0] = Utlis.c.nextFloat() <= ((float) this.client.myChar.chiMang / 10000);
+            if (array[0]) {
+                dame = dame + ((dame * 80) / 100);
+            }
+            return dame;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
         }
-        return dame;
+
     }
 
     public boolean addItem(Item item) {

@@ -35,40 +35,40 @@ public class Map {
     public static class DataMapTauBay {
 
         public static int[] FIDE = new int[]{
-                57,
-                61,
-                62,
-                66
+            57,
+            61,
+            62,
+            66
         };
         public static int[] TUONG_LAI = new int[]{
-                55,
-                63,
-                64,
-                65
+            55,
+            63,
+            64,
+            65
         };
         public static int[] VAMPA = new int[]{
-                73,
-                74,
-                76,
-                88
+            73,
+            74,
+            76,
+            88
         };
         public static int[] NAMEC = new int[]{
-                70,
-                71,
-                72,
-                77
+            70,
+            71,
+            72,
+            77
         };
         public static int[] YARDRAT = new int[]{
-                78,
-                79,
-                80,
-                81
+            78,
+            79,
+            80,
+            81
         };
         public static int[] MAPNEW = new int[]{
-                102,
-                103,
-                104,
-                105
+            102,
+            103,
+            104,
+            105
         };
 
     }
@@ -272,6 +272,7 @@ public class Map {
         }
 
         public boolean addChar(Char myChar) {
+            System.out.println("add Char: " + listChar.size());
             if (listChar.size() >= maxPlayer) {
                 return false;
             }
@@ -297,11 +298,16 @@ public class Map {
         }
 
         private void addCharToAllChar(Char myChar) {
-            for (int i = 0; i < listChar.size(); i++) {
-                if (listChar.get(i) != myChar) {
-                    listChar.get(i).client.service.addChar(myChar);
+            try {
+                for (int i = 0; i < listChar.size(); i++) {
+                    if (listChar.get(i) != myChar) {
+                        listChar.get(i).client.service.addChar(myChar);
+                    }
                 }
+            } catch (Exception e) {
+//                e.printStackTrace();
             }
+
         }
 
         private void removeCharToAllChar(Char myChar) {
@@ -353,9 +359,13 @@ public class Map {
         }
 
         public void sendMessage(Char myChar, Message message) {
-            for (int i = 0; i < this.listChar.size(); i++) {
-                this.listChar.get(i).client.session.sendMessage(message);
+            try {
+                for (int i = 0; i < this.listChar.size(); i++) {
+                    this.listChar.get(i).client.session.sendMessage(message);
+                }
+            } catch (Exception e) {
             }
+
         }
 
         public void openNpc(Client client, short idNpc, int... arrayIndex) {
